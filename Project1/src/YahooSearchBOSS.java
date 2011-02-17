@@ -18,7 +18,7 @@ public class YahooSearchBOSS {
 			//String termenc = URLEncoder.encode("\"" + term + "\"","UTF-8");
 			String termenc = URLEncoder.encode(term,"UTF-8");
 			String url = _urlbase + termenc + "?appid=" + _appid + "&format="+format;
-			System.out.println("URL=" + url); // @@@ debug
+			System.out.println("URL: " + url); // @@@ debug
 			result = urlGet(url);
 		} catch (Exception e) {
 			e.printStackTrace();
