@@ -48,8 +48,9 @@ public class SmartSearch {
 		
 		// Print results if not null
 		if (result != null) {
-			System.out.println(result);
-			YahooTop10Results results = new YahooTop10Results(result);
+			//System.out.println(result);
+			YahooTop10Results results = new YahooTop10Results(result, searchStr, precision);
+			results.listResults();
 		}
 		
 	}
