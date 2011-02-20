@@ -2,16 +2,22 @@ import java.net.*;
 import java.io.*;
 
 public class YahooSearchBOSS {
-	String _appid = null;
-	String _urlbase = "http://boss.yahooapis.com/ysearch/web/v1/";
+	private String _appid = null;
+	private String _urlbase = "http://boss.yahooapis.com/ysearch/web/v1/";
 
 	public YahooSearchBOSS (String appid) {
 		_appid = appid;
 	}
-	public YahooSearchBOSS () {
-		_appid = "ypykm2bV34HB8360S0knusfiUrQYS5A3ZvDlsTIHh13Vw8BPYSUHNloyoJ2bSg--";
-	}
 	
+	public YahooTop10Results search (String term) throws SmartSearchException {
+		String result = search(term,"json");
+		if (result == null) {
+			throw new SmartSearchException("Your search string '" + term + "' yielded no result.");
+		}
+
+		YahooTop10Results results = new YahooTop10Results(result);
+		return results;
+	}
 	public String search (String term, String format) {
 		String result = null;
 		try {
@@ -26,13 +32,6 @@ public class YahooSearchBOSS {
 		return result;
 	}
 	
-	public String searchXML (String term) {
-		return search(term,"xml");
-	}
-	public String searchJSON (String term) {
-		return search(term,"json");
-	}
-
 	public String urlGet (String urlstr) throws MalformedURLException, IOException {
 		URL url = new URL(urlstr);
 		URLConnection urlconn = url.openConnection();
