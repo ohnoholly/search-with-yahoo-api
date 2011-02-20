@@ -1,5 +1,5 @@
 /****
- *  Nicole Lee (), Laima Tazmin (lt2233)
+ *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
  *	E6111 - Project 1
  *	02/24/11
  *	Primary class
@@ -21,39 +21,54 @@ public class SmartSearch {
 		String searchStr = args[0];
 		
 		// Appid (optional)
-		String appid = null;
-		if (args.length >= 3) 		
-			appid = args[2];
-		else
-			appid = "ypykm2bV34HB8360S0knusfiUrQYS5A3ZvDlsTIHh13Vw8BPYSUHNloyoJ2bSg--";
+		String appid = (args.length >= 3) ? args[2] : 
+			"ypykm2bV34HB8360S0knusfiUrQYS5A3ZvDlsTIHh13Vw8BPYSUHNloyoJ2bSg--";
 				
 		// Precision
-		float precision = 0;
+		float precisionGoal = 0;
 	    try {
-			precision = Float.parseFloat(args[1]);
+			precisionGoal = Float.parseFloat(args[1]);
 	    } catch (NumberFormatException e) {
 	        System.err.println("Precision must be a real number between 0 and 1");
 	        System.exit(1);
 	    }
 	    
-	    // Return parameters to user
-	    System.out.println("Parameters:");
-	    System.out.format("Client key\t= %1$s\nQuery\t\t= %2$s\nPrecision\t= %3$s\n", appid, searchStr, precision);
-	    
 	    // Instantiate new Yahoo Search
 		YahooSearchBOSS yahoo = new YahooSearchBOSS(appid);
-		
-		// Capture result of search in JSON format
-		String result = yahoo.searchJSON(searchStr);
-		
-		// Print results if not null
-		if (result != null) {
-			//System.out.println(result);
-			YahooTop10Results results = new YahooTop10Results(result, searchStr, precision);
-			results.listResults();
+		QueryExpansion qex = new QueryExpansion(searchStr);
+		try {
+			int count = 0; //@@@ test
+			for (String query = searchStr; ; query = qex.expand()) {
+				// Return parameters to user
+				System.out.println("Parameters:");
+				System.out.println("Client key = " + appid);
+				System.out.println("Query      = " + query);
+				System.out.println("Precision  = " + precisionGoal);
+
+				YahooTop10Results results = yahoo.search(query);  // send query and parse result
+				results.getUserFeedback();                        // get user feedback
+				float precision = results.getPrecision();         // calculate result precision
+
+				System.out.println("======================");
+				System.out.println("FEEDBACK SUMMARY");
+				System.out.println("Query " + query);
+				System.out.println("Precision " + precision);
+
+				if (precision < precisionGoal) {
+					System.out.println("Still below the desired precision of " + precisionGoal);
+					qex.updateResult(results);
+				} else {
+					System.out.println("Desired precision reached, done");
+					break;
+				}
+
+				if (count++ > 1) break ; //@@@ test
+			} // end for
+		} catch(SmartSearchException e) {
+			System.err.println(e.getMessage());
+			System.exit(1);
 		}
-		
-	}
+	} // end main
 	
 	/**
 	 * Returns an error message and usage information

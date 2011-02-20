@@ -1,32 +1,21 @@
-import java.net.*;
-import java.io.*;
+//import java.net.*;
+//import java.io.*;
 import java.util.ArrayList;
-import java.util.InputMismatchException;
+//import java.util.InputMismatchException;
 import java.util.Scanner;
-import java.util.regex.*;
+//import java.util.regex.*;
 
 public class YahooTop10Results {
 	
-	ArrayList<ResultNode> _arr = null;	// Array of top 10 results
-	int count = 0;
-	float desiredPrec = 0;
-	String originalQuery = null;
-	
-	/**
-	 * Constructor
-	 */
-	public YahooTop10Results () {
-		_arr = new ArrayList<ResultNode>();
-	}
+	// Array of top 10 results
+	private ArrayList<ResultNode> _arr = new ArrayList<ResultNode>(); 
+	private int count = 0;
 	
 	/**
 	 * Constructor with result data
 	 * @param res A string of data in JSON format
 	 */
-	public YahooTop10Results(String res, String query, float prec) {
-		_arr = new ArrayList<ResultNode>();
-		originalQuery = query;
-		desiredPrec = prec;
+	public YahooTop10Results (String res) {
 		buildArray(res);
 	}
 	
@@ -47,9 +36,7 @@ public class YahooTop10Results {
 		
 		// Store each result into array
 		for (int i = 1; i <= 10; i++) {
-			
-			// Match one result
-			scan.findInLine(matchRes);
+			scan.findInLine(matchRes); // Match one result
 
 			// Store the three values into ResultNode
 			String summary = scan.match().group(1);
@@ -68,10 +55,9 @@ public class YahooTop10Results {
 	 * Prints the results and prompts for relevance judgment
 	 * @param count No of results
 	 */
-	public void listResults() {
+	public void getUserFeedback() {
 		
 		System.out.println("Total no of results : "+count);
-
 		System.out.println("Yahoo! Search Results:");
 		System.out.println("======================");
 		
@@ -82,13 +68,9 @@ public class YahooTop10Results {
 		for (ResultNode node : _arr) {
 			System.out.println("Result "+ ++i);
 			System.out.println(node);
-			// Ask user if the result is relevant
-			getRelevance(in, node);
+
+			getRelevance(in, node); // Ask user if the result is relevant
 		}
-		
-		in.close();
-		
-		getFeedback(originalQuery); // @@@ Change when query is altered
 	}
 	
 	/**
@@ -108,96 +90,17 @@ public class YahooTop10Results {
 	 * Calculates the precision score of results in array
 	 * @return a precision score
 	 */
-	public float getResultPrec() {
+	public float getPrecision() {
 		float prec = 0;
 		
 		// Add up the number of relevant nodes
 		for (ResultNode node : _arr) {
-			if (node.relevant == true)
+			if (node.isRelevant())
 				prec++;
 		}
 		
-		// Divide by 10 to get score
-		return prec / 10;
-	}
-	
-	/**
-	 * Prints feedback summary after one pass
-	 * @param query String containing original query
-	 */
-	public void getFeedback(String query) {
-		
-		System.out.println("======================");
-		System.out.println("FEEDBACK SUMMARY");
-		
-		System.out.println("Query "+query);
-		System.out.println("Precision "+getResultPrec());
-		
-		// Print this if the desired precision score is reached
-		if (getResultPrec() >= desiredPrec)
-			System.out.println("Desired precision reached, done");
-		
-		// @@@ what happens if not reached...
-	}
-	
-	/**
-	 * Class containing information about each result and its relevance
-	 */
-	public class ResultNode {
-		
-		String title;
-		String url;
-		String summary;
-		
-		// Tracks if the result is relevant
-		Boolean relevant = false;
-		
-		/**
-		 * Constructor for result node
-		 * @param summary Result abstract
-		 * @param title Result title
-		 * @param url Result URL
-		 */
-		public ResultNode (String summary, String title, String url) {
-			this.title = trim(title);
-			this.url = trim(url);
-			this.summary = trim(summary);
-		}
-		
-		/**
-		 * Prints the node
-		 */
-		public String toString() {
-			String str = String.format("[\n URL: %s\n Title: %s\n Summary: %s\n]\n", url, title, summary);
-			return str;
-		}
-		
-		/**
-		 * Sets the relevance of a result
-		 * @param bool a String that is "N" or "Y"
-		 */
-		public void isRelevant (String bool) {
-			if (bool.equalsIgnoreCase("Y"))
-				relevant = true;
-			else
-				relevant = false;
-		}
-		
-	}
-	
-	/**
-	 * Removes HTML code and replaces escaped characters
-	 * @param str A string from Yahoo
-	 * @return A clean string
-	 */
-	public static String trim(String str) {
-		String newStr = null;
-		
-		newStr = str.replaceAll("\\<.*?b\\>", "");
-		newStr = newStr.replaceAll("\\\\/", "/");
-		newStr = newStr.replaceAll("\\\\\"", "\"");
-
-		return newStr;
+		// Divide by no. of results to get score
+		return prec / _arr.size();
 	}
 	
 }
