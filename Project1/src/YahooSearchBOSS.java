@@ -1,3 +1,10 @@
+/****
+ *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
+ *	E6111 - Project 1
+ *	02/24/11
+ *	This class requests data from Yahoo Search BOSS API given a search string.
+ ****/
+
 import java.net.*;
 import java.io.*;
 
@@ -32,7 +39,7 @@ public class YahooSearchBOSS {
 		return result;
 	}
 	
-	public String urlGet (String urlstr) throws MalformedURLException, IOException {
+	public static String urlGet (String urlstr) throws MalformedURLException, IOException {
 		URL url = new URL(urlstr);
 		URLConnection urlconn = url.openConnection();
         BufferedReader in = new BufferedReader(new InputStreamReader(urlconn.getInputStream()));
