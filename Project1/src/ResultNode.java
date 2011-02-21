@@ -1,11 +1,11 @@
-import java.io.IOException;
-
 /****
  *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
  *	E6111 - Project 1
  *	02/24/11
  *	This class stores information about a single result and its user-defined relevance.
  ****/
+
+import java.io.IOException;
 
 public class ResultNode {
 

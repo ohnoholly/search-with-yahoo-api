@@ -102,7 +102,7 @@ public class TermsVector {
 	public String getBestTerms(int num) {
 		
 		String str = "";
-		TermNode[] termArray = null;
+		TermNode[] termArray = new TermNode[num];
 		
 		// Create a binary heap
 		BinaryHeap<TermNode> heap = new BinaryHeap<TermNode>();
@@ -113,12 +113,10 @@ public class TermsVector {
 		// Get top terms
 		for (int i = 0; i < num; i++) {
 			termArray[i] = heap.deleteMax();
-		}
-		
-		// Create string
-		for (int j = 0; j < termArray.length; j++) {
-			str += termArray[j].getTerm() + " ";
-		}
+			
+			str += termArray[i].getTerm() + " ";
+			//System.out.println("Test: "+termArray[i].getTerm()+ " "+termArray[i].getScore());
+		}		
 		
 		return str;
 		
