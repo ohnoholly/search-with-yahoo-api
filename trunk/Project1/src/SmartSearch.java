@@ -9,7 +9,7 @@
 public class SmartSearch {
 
 	/**
-	 * @param args Takes as arguments query, precision and optionally appid
+	 * @param args Takes as arguments: query, precision goal and optionally appid
 	 */
 	public static void main(String[] args) {
 		
@@ -17,14 +17,14 @@ public class SmartSearch {
 		if (args.length < 2 || args.length > 3)
 			usage("Invalid Arguments");
 
-		// Search string
+		// Set search string
 		String searchStr = args[0];
 		
-		// Appid (optional)
+		// Set appid (optional)
 		String appid = (args.length >= 3) ? args[2] : 
 			"ypykm2bV34HB8360S0knusfiUrQYS5A3ZvDlsTIHh13Vw8BPYSUHNloyoJ2bSg--";
 				
-		// Precision
+		// Set precision goal
 		float precisionGoal = 0;
 	    try {
 			precisionGoal = Float.parseFloat(args[1]);
@@ -35,28 +35,35 @@ public class SmartSearch {
 	    
 	    // Instantiate new Yahoo Search
 		YahooSearchBOSS yahoo = new YahooSearchBOSS(appid);
+		
+		// Instantiate new Query Expansion
 		QueryExpansion qex = new QueryExpansion(searchStr);
+		
 		try {
 			int count = 0; //@@@ test
 			for (String query = searchStr; ; query = qex.expand()) {
+				
 				// Return parameters to user
 				System.out.println("Parameters:");
 				System.out.println("Client key = " + appid);
 				System.out.println("Query      = " + query);
 				System.out.println("Precision  = " + precisionGoal);
 
-				YahooTop10Results results = yahoo.search(query);  // send query and parse result
-				results.getUserFeedback();                        // get user feedback
-				float precision = results.getPrecision();         // calculate result precision
+				// Send query and parse result
+				YahooTop10Results results = yahoo.search(query);  
+				results.getUserFeedback();                        // Get user feedback
+				float precision = results.getPrecision();         // Calculate result precision
 
+				// Return feedback summary to user
 				System.out.println("======================");
 				System.out.println("FEEDBACK SUMMARY");
 				System.out.println("Query " + query);
 				System.out.println("Precision " + precision);
 
+				// Revise query or not
 				if (precision < precisionGoal) {
 					System.out.println("Still below the desired precision of " + precisionGoal);
-					qex.updateResult(results);
+					qex.updateResult(results); // Look at current results and expand
 				} else {
 					System.out.println("Desired precision reached, done");
 					break;

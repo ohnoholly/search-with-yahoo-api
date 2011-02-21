@@ -1,6 +1,12 @@
-/**
- * Class containing information about each result and its relevance
- */
+import java.io.IOException;
+
+/****
+ *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
+ *	E6111 - Project 1
+ *	02/24/11
+ *	This class stores information about a single result and its user-defined relevance.
+ ****/
+
 public class ResultNode {
 
 	private String title;
@@ -26,15 +32,37 @@ public class ResultNode {
 	 * Sets the relevance of a result
 	 * @param bool a String that is "N" or "Y"
 	 */
-	public void isRelevant (String bool) {
+	public void setRelevance (String bool) {
 		if (bool.equalsIgnoreCase("Y"))
 			relevant = true;
 		else
 			relevant = false;
 	}
+	
+	/**
+	 * Returns if a result is relevant or not
+	 * @return A boolean false or true
+	 */
 	public boolean isRelevant () {
 		return relevant;
 	}
+	
+	/**
+	 * Returns result's url
+	 * @return
+	 */
+	public String getUrl() {
+		return url;
+	}
+	
+	/**
+	 * Returns result's web page
+	 * @return
+	 */
+	public String getWebPage() throws IOException {
+		return YahooSearchBOSS.urlGet(url);
+	}
+	
 	/**
 	 * Removes HTML code and replaces escaped characters
 	 * @param str A string from Yahoo

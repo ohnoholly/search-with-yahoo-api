@@ -1,5 +1,14 @@
+/****
+ *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
+ *	E6111 - Project 1
+ *	02/24/11
+ *	This class parses the data from Yahoo Search and stores results in an array.
+ *	Also collects relevance judgment of the results.
+ ****/
+
 //import java.net.*;
 //import java.io.*;
+import java.io.IOException;
 import java.util.ArrayList;
 //import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -7,7 +16,7 @@ import java.util.Scanner;
 
 public class YahooTop10Results {
 	
-	// Array of top 10 results
+	// Array of results
 	private ArrayList<ResultNode> _arr = new ArrayList<ResultNode>(); 
 	private int count = 0;
 	
@@ -23,7 +32,7 @@ public class YahooTop10Results {
 	 * Parses results data and compiles into an object array
 	 * @param res A string of data in JSON format
 	 */
-	public void buildArray(String res) {
+	private void buildArray(String res) {
 		
 		Scanner scan = new Scanner(res);
 		
@@ -35,7 +44,7 @@ public class YahooTop10Results {
 		String matchRes = "\"abstract\":\"(.*?)\",.*?\"title\":\"(.*?)\",\"url\":\"(.*?)\"";
 		
 		// Store each result into array
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= count; i++) {
 			scan.findInLine(matchRes); // Match one result
 
 			// Store the three values into ResultNode
@@ -52,8 +61,15 @@ public class YahooTop10Results {
 	}
 	
 	/**
+	 * Returns result nodes
+	 * @return
+	 */
+	public ArrayList<ResultNode> getResultNodes() {
+		return _arr;
+	}
+	
+	/**
 	 * Prints the results and prompts for relevance judgment
-	 * @param count No of results
 	 */
 	public void getUserFeedback() {
 		
@@ -68,7 +84,7 @@ public class YahooTop10Results {
 		for (ResultNode node : _arr) {
 			System.out.println("Result "+ ++i);
 			System.out.println(node);
-
+			
 			getRelevance(in, node); // Ask user if the result is relevant
 		}
 	}
@@ -83,7 +99,7 @@ public class YahooTop10Results {
 		String rel = in.next("[YyNn]"); // @@@ Need more elegant exception handling here
 		
 		// Set the node's relevance
-		node.isRelevant(rel);
+		node.setRelevance(rel);
 	}
 	
 	/**
