@@ -52,14 +52,7 @@ public class QueryExpansion {
 		lastQuery = queryHistory.get(queryHistory.size()-1);
 		
 		String augment = expandQuery();
-		//String augment = "bill"; // @@@ test
 		String newQuery = lastQuery + " " + augment;  // @@@ test
-
-		// @@@ Expansion Algorithm - To be implemented
-		// @@@ mimicking the reference program...
-		System.out.println("Indexing results ....");
-		System.out.println("Indexing results ....");
-		System.out.println("Augmenting by  " + augment);
 
 		return newQuery;
 	}
@@ -84,7 +77,7 @@ public class QueryExpansion {
 		// Collect terms from the documents (web pages)
 		Vector<TermsVector> docTermsVector = getDocsTerms();
 		
-		// Aggregate and set the score of the document terms
+		// Set the scores of the document terms and merge
 		TermsVector docTerms = calculateScores(docTermsVector);
 		
 		// Get the top 2 new terms
@@ -93,6 +86,8 @@ public class QueryExpansion {
 		// Alternative:
 		// TODO: Set the score of the query terms
 		// TODO: Combine query and doc terms, sort and choose top 2 new terms
+		
+		System.out.println("Augmenting by  " + newTerms);
 		
 		return newTerms;
 		
@@ -105,7 +100,9 @@ public class QueryExpansion {
 	 */
 	private Vector<WebPage> getRelevantDocs() throws IOException {
 		Vector<WebPage> docs = new Vector<WebPage>();
-		
+				
+		System.out.println("Indexing results ....");
+
 		// Iterate over each result
 		for (ResultNode node : result.getResultNodes()) {
 			if (node.isRelevant()) {							// If relevant
@@ -113,6 +110,7 @@ public class QueryExpansion {
 				docs.add(wp);									// Add to vector
 			}
 		}
+		
 		return docs;
 	}
 	
@@ -123,6 +121,8 @@ public class QueryExpansion {
 	private Vector<TermsVector> getDocsTerms() {
 		Vector<TermsVector> docsTerms = new Vector<TermsVector>();
 		
+		System.out.println("Indexing results ....");
+
 		// Iterate over each document
 		for (WebPage wp: relDocs) {
 			TermsVector tv = new TermsVector(wp.getFullText());	// Get the full text of web page (then parse it)
@@ -146,7 +146,7 @@ public class QueryExpansion {
 			
 			TermsVector tv = docsTerms.get(i); // get the vector for a particular document
 			
-			for (int j = 0; j < tv.size(); i++) {
+			for (int j = 0; j < tv.size(); j++) {
 				
 				// Get term node of the given vector
 				TermNode node = tv.getTerm(j);
@@ -179,7 +179,7 @@ public class QueryExpansion {
 			TermNode node = terms.get(i);
 			
 			// Iterate through all other term nodes
-			for (int j = i+1; i < terms.size(); j++) {
+			for (int j = i+1; j < terms.size(); j++) {
 				TermNode tmp = terms.get(j);
 				
 				// If equal terms, then combine their scores
