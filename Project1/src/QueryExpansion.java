@@ -7,13 +7,17 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Vector;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 public class QueryExpansion {
 	
 	private ArrayList<String> queryHistory = new ArrayList<String>();
 	private YahooTop10Results result = null;
 	private String lastQuery;
+	private InvertedIndex invIdx = new InvertedIndex();
 	
 	/**
 	 * Rocchio's Algorithm
@@ -44,16 +48,97 @@ public class QueryExpansion {
 		result = r;
 	}
 	
+
+	/**
+	 * create the inverted index from search results
+	 */
+	public void buildIndex () {
+		invIdx.clear();
+		ArrayList<ResultNode> resultList = result.getResultNodes();
+		for (int docid=0; docid < resultList.size(); docid++) {
+			ResultNode r = resultList.get(docid);
+			String title   = r.getTitle();
+			String summary = r.getSummary();
+			String line = title + " " + summary; // all text that was shown to user
+			invIdx.addDocument(docid, line);
+		}
+		//System.out.println("DEBUG: index is\n" + invIdx); // @@@ DEBUG
+	}
+	
+	/**
+	 *  Compute the tf-idf vector for each document 
+	 *  @@@ term with best combined tf-idf score will be the augment -- to be refined
+	 */
+	public String getTFIDFAugment() {
+		// sum up the relevant documents' terms tfidf
+		// print the 5 terms with highest tfidf score
+		
+		HashMap<String,TermTFIDF> tfidfVector = new HashMap<String,TermTFIDF>();
+		ArrayList<ResultNode> rn = result.getResultNodes();
+		for (int docid=0; docid < rn.size(); docid++) {
+			ResultNode node = rn.get(docid);
+			if (! node.isRelevant()) continue;
+
+			for (String term: invIdx.getTerms()) {
+				double tfidf = invIdx.tfidf(term, docid);
+				if (term.equals("bill") || term.equals("information")) {
+					System.out.println("DEBUG (before): "+ term + " tfidf = "+ tfidf);
+				}
+				if (tfidfVector.containsKey(term)) { // sum up all relevant doc's tfidf
+					double origTfidf = tfidfVector.get(term).getTfIdf();
+					tfidf += origTfidf;
+					tfidfVector.get(term).put(term, tfidf);
+				} else {
+					TermTFIDF t = new TermTFIDF(term,tfidf);
+					tfidfVector.put(term, t);
+				}
+				if (term.equals("bill") || term.equals("information")) {
+					System.out.println("DEBUG (after): " + term + " tfidf = " + tfidf);
+				}
+				
+			}
+		}
+
+		// Sort descending order by tf-idf score
+		ArrayList<TermTFIDF> tfidfList = new ArrayList<TermTFIDF>(tfidfVector.values());
+		Collections.sort(tfidfList); 
+
+		// @@@ DEBUG: print top 5 tf-idf score terms
+		int count = 0;
+		for (TermTFIDF t: tfidfList) {
+			System.out.println("DEBUG: " + t.getTerm() + " tf-idf=" + t.getTfIdf());
+			if (++count >=5) break;
+		}
+
+		return tfidfList.get(0).getTerm(); // term with highest tfidf score
+	}
+	
+
 	/**
 	 * Expand the query
 	 * @return New query
 	 */
-	public String expand () {
+	public String expandx () {
 		lastQuery = queryHistory.get(queryHistory.size()-1);
 		
 		String augment = expandQuery();
 		String newQuery = lastQuery + " " + augment;  // @@@ test
 
+		return newQuery;
+	}
+	
+	/**
+	 * Expand the query using the highest TF-IDF scored term as augment
+	 * @return newQueryString
+	 */
+	public String expand() {
+		lastQuery = queryHistory.get(queryHistory.size()-1);
+		
+		buildIndex();
+		String augmentx = getTFIDFAugment();
+		System.out.println("TF-IDF Augment: " + augmentx);
+
+		String newQuery = lastQuery + " " + augmentx;
 		return newQuery;
 	}
 	
