@@ -55,6 +55,13 @@ public class ResultNode {
 		return url;
 	}
 	
+	public String getSummary() {
+		return summary;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
 	/**
 	 * Returns result's web page
 	 * @return
