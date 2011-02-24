@@ -7,21 +7,36 @@
 
 public class TermNode implements Comparable<TermNode> {
 
-	private String termName;		// The term name
-	private int termFrequency;		// Frequency of term in a document or set of documents
-	private float score;			// Score, calculated by weight and factor
+	private String term;		     // The term name
+	private double weight;			 // Weight tf*idf
+	private double normalizedWeight; // L2 normalized tf*idf
 	
-	private float weight;			// Weight tf*idf
+	private int termFrequency;		 // Frequency of term in a document or set of documents
+	private double score;			 // Score, calculated by weight and factor
+	
+
 	
 	/**
 	 * Constructor
 	 * @param name the term
 	 */
 	public TermNode(String name) {
-		termName = name;
-		termFrequency = 1;
+		this.term = name;
+		this.termFrequency = 1;
 	}
 	
+	/**
+	 * Constructor 
+	 * @param name the term
+	 * @param tfidf Term Frequency - Inverted Document Frequency
+	 */
+	public TermNode (String name, double tfidf) {
+		this.term = name;
+		this.weight = tfidf;
+		this.termFrequency = 1;
+		this.score = tfidf; // @@@ test: score = tfidf
+	}
+
 	/**
 	 * Increments the frequency of the term
 	 */
@@ -34,14 +49,14 @@ public class TermNode implements Comparable<TermNode> {
 	 * @return
 	 */
 	public String getTerm() {
-		return termName;
+		return term;
 	}
 	
 	/**
 	 * Sets the score of the term
 	 * @param score
 	 */
-	public void setScore(float score) {
+	public void setScore(double score) {
 		this.score = score;
 	}
 	
@@ -49,15 +64,30 @@ public class TermNode implements Comparable<TermNode> {
 	 * Returns the score of the term
 	 * @return
 	 */
-	public float getScore() {
+	public double getScore() {
 		return score;
 	}
 
+	public double getWeight() {
+		return weight;
+	}
+	public void setWeight(double tfidf) {
+		this.weight = tfidf;
+		this.score = tfidf; // @@@ test: set score = TFIDF
+	}
+
+	public double getNormalizedWeight() {
+		return normalizedWeight;
+	}
+	public void setNormalizedWeight(double w) {
+		this.normalizedWeight = w;
+	}
+	
 	/**
 	 * Calculates weight
 	 * @param df the number of documents
 	 */
-	public float calculateWeight(float df) {
+	public double calculateWeight(float df) {
 		
 		weight = termFrequency; // @@@ test
 		// weight = tf * idf
@@ -66,15 +96,15 @@ public class TermNode implements Comparable<TermNode> {
 	}
 
 	/**
-	 * Compares two nodes using score
+	 * Compares two nodes by score
+	 * in descending order
 	 */
 	public int compareTo(TermNode tn) {
-		if (this.score > tn.score)
+		if (this.normalizedWeight < tn.normalizedWeight)
 			return 1;
-		else if (this.score == tn.score)
+		else if (this.normalizedWeight == tn.normalizedWeight)
 			return 0;
 		else
 			return -1;
 	}
-
 }

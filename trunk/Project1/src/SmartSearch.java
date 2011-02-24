@@ -68,8 +68,6 @@ public class SmartSearch {
 					System.out.println("Desired precision reached, done");
 					break;
 				}
-
-				if (count++ > 1) break ; //@@@ test
 			} // end for
 		} catch(SmartSearchException e) {
 			System.err.println(e.getMessage());

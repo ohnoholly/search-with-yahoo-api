@@ -8,7 +8,7 @@
 
 //import java.net.*;
 //import java.io.*;
-import java.io.IOException;
+//import java.io.IOException;
 import java.util.ArrayList;
 //import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -44,7 +44,7 @@ public class YahooTop10Results {
 		String matchRes = "\"abstract\":\"(.*?)\",.*?\"title\":\"(.*?)\",\"url\":\"(.*?)\"";
 		
 		// Store each result into array
-		for (int i = 1; i <= count; i++) {
+		for (int i = 0; i < count; i++) {
 			scan.findInLine(matchRes); // Match one result
 
 			// Store the three values into ResultNode
@@ -52,8 +52,7 @@ public class YahooTop10Results {
 			String title = scan.match().group(2);
 			String url = scan.match().group(3);
 			
-			ResultNode node = new ResultNode(summary, title, url);
-			
+			ResultNode node = new ResultNode(i, summary, title, url);
 			_arr.add(node);
 		}
 		
@@ -66,6 +65,23 @@ public class YahooTop10Results {
 	 */
 	public ArrayList<ResultNode> getResultNodes() {
 		return _arr;
+	}
+	
+	/**
+	 * 
+	 * @return relevant result nodes
+	 */
+	public ArrayList<ResultNode> getRelevantResultNodes() {
+		ArrayList<ResultNode> relevantResults = new ArrayList<ResultNode> (_arr.size());
+		for (ResultNode r: _arr) {
+			//System.out.print("node " + r.getDocId());			
+			if (r.isRelevant()) {
+				//System.out.print(" is relevant");
+				relevantResults.add(r);
+			}
+			//System.out.println("");
+		}
+		return relevantResults;
 	}
 	
 	/**
