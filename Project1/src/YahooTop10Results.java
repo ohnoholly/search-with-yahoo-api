@@ -67,6 +67,10 @@ public class YahooTop10Results {
 		return _arr;
 	}
 	
+	public int getResultCount () {
+		return _arr.size();
+	}
+	
 	/**
 	 * Returns result nodes marked relevant by user
 	 * @return relevant result nodes
