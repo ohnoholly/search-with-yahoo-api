@@ -7,7 +7,9 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Vector;
 import java.util.HashMap;
 
@@ -17,15 +19,6 @@ public class QueryExpansion {
 	private YahooTop10Results result = null;
 	private String lastQuery;
 	private InvertedIndex invIdx = new InvertedIndex();
-	
-	// Rocchio Constants
-	private final static double alpha = 1;
-	private final static double beta = .75;
-	private final static double gamma = .15;
-	
-	// Relevant web page documents
-	//private Vector<WebPage> relDocs = null;
-	private int relDocsCount = 0;
 	
 	/**
 	 * Constructor
@@ -61,7 +54,7 @@ public class QueryExpansion {
 	 *  using Sahami-Heilman's similarity Algorithm 
 	 *  
 	 */
-	public String getTFIDFAugment2() {
+	public String getNormalizedAugment() {
 		// Build the TFIDF term vectors for the relevant documents
 		ArrayList<TermVector> docVectors = new ArrayList<TermVector> ();
 		for (ResultNode rn: result.getRelevantResultNodes()) {
@@ -91,21 +84,49 @@ public class QueryExpansion {
 		ArrayList<TermNode> termList = centroid.getTerms();
 		Collections.sort(termList);
 
-		// @@@ DEBUG: print top 5 tf-idf score terms
-		int count = 0;
-		for (TermNode t: termList) {
-			System.out.println("DEBUG: " + t.getTerm() + " normalized weight=" + t.getNormalizedWeight());
-			if (++count >=5) break;
-		}
+		// quick way to index all the previously used search terms
+		// check the new found terms against previous query to make sure there are no duplicates
+		HashSet<String> lastQueryWords = new HashSet<String>(Arrays.asList(lastQuery.split(" ")));
 
-		return termList.get(0).getTerm(); // term with highest tfidf score
+		// augment with up to 2 top tf-idf score terms
+		double weightDiffThreshold = 0.2; // weight is less than 20% difference
+		String augment = null;
+		double augmentWeight = 0;
+		for (int i=0; i < termList.size(); i++) {
+			TermNode t = termList.get(i);
+			String term = t.getTerm();
+			double weight = t.getWeight(); 
+			
+			// do not re-query terms that are in the previous query
+			if (lastQueryWords.contains(term)) {
+				System.out.println("term "+ term +" ("+weight+") is in previous query. Skipping.");
+				continue;
+			}
+			//System.out.println("DEBUG: " + term + " weight=" + t.getWeight());
+			
+			// if the top 2 terms are close together in the score
+			// use both terms in the next search
+			if ((augment != null) && (weight > 0)) {
+				// tie break results that are close
+				double weightDiff = (augmentWeight - weight) / augmentWeight;
+				if (weightDiff < weightDiffThreshold) {
+					augment += " " + term;
+				}
+				break;
+			} else {
+				augment = term;
+				augmentWeight = weight;
+			}			
+		}
+		return augment;
+
 	}
 
 	/**
 	 *  Compute the tf-idf vector for each document 
 	 *  @@@ term with best combined tf-idf score will be the augment -- to be refined
 	 */
-	public String getTFIDFAugment1() {
+	public String getAugment() {
 		// sum up the relevant documents' terms tfidf
 		// print the 5 terms with highest tfidf score
 		// Build the TFIDF term vectors for the relevant documents
@@ -139,22 +160,6 @@ public class QueryExpansion {
 		return termList.get(0).getTerm(); // term with highest tfidf score
 	}
 	
-	
-	
-
-	/**
-	 * Expand the query
-	 * @return New query
-	 */
-//	public String expandx () {
-//		lastQuery = queryHistory.get(queryHistory.size()-1);
-//		
-//		String augment = expandQuery();
-//		String newQuery = lastQuery + " " + augment;  // @@@ test
-//
-//		return newQuery;
-//	}
-	
 	/**
 	 * Expand the query using the highest TF-IDF scored term as augment
 	 * @return newQueryString
@@ -163,11 +168,8 @@ public class QueryExpansion {
 		lastQuery = queryHistory.get(queryHistory.size()-1);
 		
 		buildIndex();
-		String augment1 = getTFIDFAugment1(); // Not Normalized
-		String augment2 = getTFIDFAugment2(); // Normalized
-		System.out.println("DEBUG: Augmented By: "+augment1+"(not normalized) vs. "+augment2+"(normalized)");
-		
-		String augment = augment2; // testing normalized
+		//String augment1 = getTFIDFAugment1(); // Not Normalized
+		String augment = getNormalizedAugment(); // Normalized
 		System.out.println("Augmented By: " + augment);
 
 		String newQuery = lastQuery + " " + augment;
