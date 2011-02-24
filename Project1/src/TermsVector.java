@@ -5,7 +5,7 @@
  *	This class stores vector of term nodes for query expansion.
  ****/
 
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Vector;
 
 public class TermsVector {

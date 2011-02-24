@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 import java.util.HashMap;
-import java.util.TreeSet;
 
 public class QueryExpansion {
 	
@@ -53,64 +52,95 @@ public class QueryExpansion {
 	 * create the inverted index from search results
 	 */
 	public void buildIndex () {
+		System.out.println("Indexing results ....");
 		invIdx.clear();
 		ArrayList<ResultNode> resultList = result.getResultNodes();
-		for (int docid=0; docid < resultList.size(); docid++) {
-			ResultNode r = resultList.get(docid);
-			String title   = r.getTitle();
-			String summary = r.getSummary();
-			String line = title + " " + summary; // all text that was shown to user
-			invIdx.addDocument(docid, line);
+		for (ResultNode rn: resultList) {
+			invIdx.addDocument(rn);
 		}
-		//System.out.println("DEBUG: index is\n" + invIdx); // @@@ DEBUG
 	}
 	
+	/**
+	 *  Compute the tf-idf vector for each document
+	 *  using Sahami-Heilman's similarity Algorithm 
+	 *  
+	 */
+	public String getTFIDFAugment2() {
+		// Build the TFIDF term vectors for the relevant documents
+		ArrayList<TermVector> docVectors = new ArrayList<TermVector> ();
+		for (ResultNode rn: result.getRelevantResultNodes()) {
+			TermVector tv = new TermVector(rn, invIdx); // term vector for a document
+			docVectors.add(tv);
+		}
+
+		// Original algorithm truncates each vector to 50 highest scoring terms
+		// Our vectors are short, no need to truncate
+		
+		// Find the Centroid of the L2 normalized term vectors
+		// Centroid is a vector of all distinct terms in the relevant documents
+		// The term weight is the sum of the normalized weight of the term in all relevant docs
+		TermVector centroid = new TermVector();
+		for (TermVector tv: docVectors) {
+			for (TermNode tn: tv.getTerms()) {
+				String term = tn.getTerm();
+				double weight = tn.getNormalizedWeight();
+				centroid.addTerm(term, weight);
+			}
+		}
+		
+		// Normalize the Centroid
+		centroid.l2normalize();
+		
+		// Sort descending order by normalized weight
+		ArrayList<TermNode> termList = centroid.getTerms();
+		Collections.sort(termList);
+
+		// @@@ DEBUG: print top 5 tf-idf score terms
+		int count = 0;
+		for (TermNode t: termList) {
+			System.out.println("DEBUG: " + t.getTerm() + " normalized weight=" + t.getNormalizedWeight());
+			if (++count >=5) break;
+		}
+
+		return termList.get(0).getTerm(); // term with highest tfidf score
+	}
+
 	/**
 	 *  Compute the tf-idf vector for each document 
 	 *  @@@ term with best combined tf-idf score will be the augment -- to be refined
 	 */
-	public String getTFIDFAugment() {
+	public String getTFIDFAugment1() {
 		// sum up the relevant documents' terms tfidf
 		// print the 5 terms with highest tfidf score
-		
-		HashMap<String,TermTFIDF> tfidfVector = new HashMap<String,TermTFIDF>();
-		ArrayList<ResultNode> rn = result.getResultNodes();
-		for (int docid=0; docid < rn.size(); docid++) {
-			ResultNode node = rn.get(docid);
-			if (! node.isRelevant()) continue;
-
-			for (String term: invIdx.getTerms()) {
-				double tfidf = invIdx.tfidf(term, docid);
-				if (term.equals("bill") || term.equals("information")) {
-					System.out.println("DEBUG (before): "+ term + " tfidf = "+ tfidf);
-				}
-				if (tfidfVector.containsKey(term)) { // sum up all relevant doc's tfidf
-					double origTfidf = tfidfVector.get(term).getTfIdf();
-					tfidf += origTfidf;
-					tfidfVector.get(term).put(term, tfidf);
-				} else {
-					TermTFIDF t = new TermTFIDF(term,tfidf);
-					tfidfVector.put(term, t);
-				}
-				if (term.equals("bill") || term.equals("information")) {
-					System.out.println("DEBUG (after): " + term + " tfidf = " + tfidf);
-				}
-				
-			}
+		// Build the TFIDF term vectors for the relevant documents
+		ArrayList<TermVector> docVectors = new ArrayList<TermVector> ();
+		for (ResultNode rn: result.getRelevantResultNodes()) {
+			TermVector tv = new TermVector(rn, invIdx); // term vector for a document
+			docVectors.add(tv);
 		}
 
-		// Sort descending order by tf-idf score
-		ArrayList<TermTFIDF> tfidfList = new ArrayList<TermTFIDF>(tfidfVector.values());
-		Collections.sort(tfidfList); 
+		// Sum up the tfidf of all relevant docs
+		TermVector terms = new TermVector();
+		for (TermVector tv: docVectors) {
+			for (TermNode tn: tv.getTerms()) {
+				String term = tn.getTerm();
+				double weight = tn.getWeight(); // tf-idf
+				terms.addTerm(term,weight);
+			}
+		}
+		
+		// Sort descending order by L2 normalized weight
+		ArrayList<TermNode> termList = terms.getTerms();
+		Collections.sort(termList); 
 
 		// @@@ DEBUG: print top 5 tf-idf score terms
 		int count = 0;
-		for (TermTFIDF t: tfidfList) {
-			System.out.println("DEBUG: " + t.getTerm() + " tf-idf=" + t.getTfIdf());
+		for (TermNode t: termList) {
+			System.out.println("DEBUG: " + t.getTerm() + " term weight=" + t.getWeight());
 			if (++count >=5) break;
 		}
 
-		return tfidfList.get(0).getTerm(); // term with highest tfidf score
+		return termList.get(0).getTerm(); // term with highest tfidf score
 	}
 	
 
@@ -118,14 +148,14 @@ public class QueryExpansion {
 	 * Expand the query
 	 * @return New query
 	 */
-	public String expandx () {
-		lastQuery = queryHistory.get(queryHistory.size()-1);
-		
-		String augment = expandQuery();
-		String newQuery = lastQuery + " " + augment;  // @@@ test
-
-		return newQuery;
-	}
+//	public String expandx () {
+//		lastQuery = queryHistory.get(queryHistory.size()-1);
+//		
+//		String augment = expandQuery();
+//		String newQuery = lastQuery + " " + augment;  // @@@ test
+//
+//		return newQuery;
+//	}
 	
 	/**
 	 * Expand the query using the highest TF-IDF scored term as augment
@@ -135,10 +165,14 @@ public class QueryExpansion {
 		lastQuery = queryHistory.get(queryHistory.size()-1);
 		
 		buildIndex();
-		String augmentx = getTFIDFAugment();
-		System.out.println("TF-IDF Augment: " + augmentx);
+		String augment1 = getTFIDFAugment1(); // Not Normalized
+		String augment2 = getTFIDFAugment2(); // Normalized
+		System.out.println("DEBUG: Augmented By: "+augment1+"(not normalized) vs. "+augment2+"(normalized)");
+		
+		String augment = augment2; // testing normalized
+		System.out.println("Augmented By: " + augment);
 
-		String newQuery = lastQuery + " " + augmentx;
+		String newQuery = lastQuery + " " + augment;
 		return newQuery;
 	}
 	
@@ -238,7 +272,7 @@ public class QueryExpansion {
 				
 				// Calculate weight and score
 				int df = 10; // @@ test
-				float weight = node.calculateWeight(df);
+				double weight = node.calculateWeight(df);
 				node.setScore(weight * (float)beta);
 				
 				// Add to new docs
@@ -269,7 +303,7 @@ public class QueryExpansion {
 				
 				// If equal terms, then combine their scores
 				if (tmp.getTerm().equalsIgnoreCase(node.getTerm())) {
-					float score = node.getScore() + tmp.getScore();
+					double score = node.getScore() + tmp.getScore();
 					node.setScore(score);
 					
 					// Remove the duplicate and continue

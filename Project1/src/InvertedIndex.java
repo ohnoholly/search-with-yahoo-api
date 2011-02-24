@@ -5,12 +5,9 @@ import java.util.TreeSet;
 
 /**
  * Inverted Index 
- * terms (the keys): list of documents that contain the term (the values)
+ * terms => list of documents that contain the term (the values)
  */
 public class InvertedIndex {
-	//		private HashMap<String,HashMap<Integer,TermPosting>> index
-	//			= new HashMap<String,HashMap<Integer,TermPosting>>();
-
 	private TreeSet<Integer> documents = new TreeSet<Integer>(); // all document ids
 	private HashMap<String,ArrayList<DocumentIndexNode>> index
 		= new HashMap<String,ArrayList<DocumentIndexNode>>();
@@ -24,9 +21,7 @@ public class InvertedIndex {
 		documents.clear();
 	}
 	
-//	public Integer[] getDocuments () {
-//		return documents.toArray(new Integer[0]);
-//	}
+
 	public TreeSet<Integer> getDocuments () {
 		return documents;
 	}
@@ -113,8 +108,8 @@ public class InvertedIndex {
 		// this should not happen because idf is calculated for terms that are present 
 		if (df == 0) df = 1;
 		double idf = Math.log10(N/df);
-		//if (term.equals("bill") || term.equals("information")) //@@@ DEBUG		
-		//	System.out.println("N="+N+", df="+df+", idf("+term+") = "+idf);
+		if (term.equals("bill") || term.equals("information")) //@@@ DEBUG		
+			System.out.println("N="+N+", df="+df+", idf("+term+") = "+idf);
 		idfCache.put(term, idf); // update cache
 		return idf;
 	}
@@ -133,27 +128,12 @@ public class InvertedIndex {
 		return tfidf;
 	}
 	
-//	public double tfidf (String term) {
-//		ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
-//		double score = 0;
-//		for (DocumentIndexNode d: doclist) {
-//			score += tfidf(term,d);
-//		}
-//		return score;
-//	}
-
-	// Process the text from a document, and add to the index
-	public void addDocument (int docid, String text) {
-		// split the summary into terms
-		// build an inverted index of each term
-		String[] words = text.split(" ");
-		for (int pos = 0; pos < words.length; pos++) {
-			String word = words[pos];
-			word = word.replaceAll("^\\W+", ""); // trim non-word characters before word
-			word = word.replaceAll("\\W+$", ""); // trim non-word characters after word
-			word = word.toLowerCase();  // lower case the word
-			if (word.equals("")) continue;
-			addTerm(word, docid, pos);
+	public void addDocument (ResultNode rn) {
+		int docid = rn.getDocId();
+		ArrayList<String> terms = rn.getTerms();
+		for (int pos=0; pos<terms.size(); pos++) {
+			String term = terms.get(pos);
+			addTerm(term,docid,pos);
 		}
 	}
 	
@@ -162,7 +142,7 @@ public class InvertedIndex {
 		for (String term: index.keySet()) {
 			sb.append(term+":");
 			ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
-			int count = 0;
+			//int count = 0;
 			for (DocumentIndexNode d: doclist) {
 				sb.append(" " + d);
 			}
@@ -192,9 +172,6 @@ public class InvertedIndex {
 		public void addPosition(int pos) {
 			positions.add(pos);
 		}
-//		public ArrayList<Integer> getPositions() {
-//			return positions;
-//		}
 		public String toString () {
 			StringBuilder sb = new StringBuilder();
 			sb.append("[" + docid + ":");
