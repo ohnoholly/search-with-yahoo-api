@@ -45,6 +45,7 @@ public class QueryExpansion {
 		invIdx.clear();
 		ArrayList<ResultNode> resultList = result.getResultNodes();
 		for (ResultNode rn: resultList) {
+			rn.setTerms();
 			invIdx.addDocument(rn);
 		}
 	}
@@ -126,39 +127,39 @@ public class QueryExpansion {
 	 *  Compute the tf-idf vector for each document 
 	 *  @@@ term with best combined tf-idf score will be the augment -- to be refined
 	 */
-	public String getAugment() {
-		// sum up the relevant documents' terms tfidf
-		// print the 5 terms with highest tfidf score
-		// Build the TFIDF term vectors for the relevant documents
-		ArrayList<TermVector> docVectors = new ArrayList<TermVector> ();
-		for (ResultNode rn: result.getRelevantResultNodes()) {
-			TermVector tv = new TermVector(rn, invIdx); // term vector for a document
-			docVectors.add(tv);
-		}
-
-		// Sum up the tfidf of all relevant docs
-		TermVector terms = new TermVector();
-		for (TermVector tv: docVectors) {
-			for (TermNode tn: tv.getTerms()) {
-				String term = tn.getTerm();
-				double weight = tn.getWeight(); // tf-idf
-				terms.addTerm(term,weight);
-			}
-		}
-		
-		// Sort descending order by L2 normalized weight
-		ArrayList<TermNode> termList = terms.getTerms();
-		Collections.sort(termList); 
-
-		// @@@ DEBUG: print top 5 tf-idf score terms
-		int count = 0;
-		for (TermNode t: termList) {
-			System.out.println("DEBUG: " + t.getTerm() + " term weight=" + t.getWeight());
-			if (++count >=5) break;
-		}
-
-		return termList.get(0).getTerm(); // term with highest tfidf score
-	}
+//	public String getAugment() {
+//		// sum up the relevant documents' terms tfidf
+//		// print the 5 terms with highest tfidf score
+//		// Build the TFIDF term vectors for the relevant documents
+//		ArrayList<TermVector> docVectors = new ArrayList<TermVector> ();
+//		for (ResultNode rn: result.getRelevantResultNodes()) {
+//			TermVector tv = new TermVector(rn, invIdx); // term vector for a document
+//			docVectors.add(tv);
+//		}
+//
+//		// Sum up the tfidf of all relevant docs
+//		TermVector terms = new TermVector();
+//		for (TermVector tv: docVectors) {
+//			for (TermNode tn: tv.getTerms()) {
+//				String term = tn.getTerm();
+//				double weight = tn.getWeight(); // tf-idf
+//				terms.addTerm(term,weight);
+//			}
+//		}
+//		
+//		// Sort descending order by L2 normalized weight
+//		ArrayList<TermNode> termList = terms.getTerms();
+//		Collections.sort(termList); 
+//
+//		// @@@ DEBUG: print top 5 tf-idf score terms
+//		int count = 0;
+//		for (TermNode t: termList) {
+//			System.out.println("DEBUG: " + t.getTerm() + " term weight=" + t.getWeight());
+//			if (++count >=5) break;
+//		}
+//
+//		return termList.get(0).getTerm(); // term with highest tfidf score
+//	}
 	
 	/**
 	 * Expand the query using the highest TF-IDF scored term as augment

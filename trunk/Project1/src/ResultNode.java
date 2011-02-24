@@ -29,7 +29,7 @@ public class ResultNode {
 		this.title = trim(title);
 		this.url = trim(url);
 		this.summary = trim(summary);
-		setTerms(); // create the keywords list
+		//setTerms(); // create the keywords list
 	}
 	
 	/**
