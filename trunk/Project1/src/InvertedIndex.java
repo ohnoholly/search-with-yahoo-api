@@ -140,10 +140,6 @@ public class InvertedIndex {
 		// this should not happen because idf is calculated for terms that are present 
 		if (df == 0) df = 1;
 		double idf = Math.log10(N/df);
-		
-		if (term.equals("bill") || term.equals("information")) //@@@ DEBUG		
-			System.out.println("N="+N+", df="+df+", idf("+term+") = "+idf);
-		
 		idfCache.put(term, idf); // update cache
 		return idf;
 	}
@@ -163,8 +159,6 @@ public class InvertedIndex {
 		int tf = (d == null) ? 0 : d.tf();
 		double idf = idf(term);
 		double tfidf = tf * idf;
-		if (term.equals("bill") || term.equals("information")) //@@@ DEBUG
-			System.out.println("tfidf("+term+","+d+") = "+tfidf);
 		return tfidf;
 	}
 	
