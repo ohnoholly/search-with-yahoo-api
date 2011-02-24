@@ -48,7 +48,11 @@ public class SmartSearch {
 				System.out.println("Precision  = " + precisionGoal);
 
 				// Send query and parse result
-				YahooTop10Results results = yahoo.search(query);  
+				YahooTop10Results results = yahoo.search(query); 
+				if (results.getResultCount() <= 0) {
+					System.out.println("No result found.");
+					break;
+				}
 				results.getUserFeedback();                        // Get user feedback
 				float precision = results.getPrecision();         // Calculate result precision
 
