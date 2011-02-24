@@ -1,12 +1,16 @@
+/****
+ *  Nicole Lee (ncl2108), Laima Tazmin (lt2233)
+ *	E6111 - Project 1
+ *	02/24/11
+ *	Class contains the Inverted Index
+ *	terms => list of documents that contain the term (the values)
+ ****/
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * Inverted Index 
- * terms => list of documents that contain the term (the values)
- */
 public class InvertedIndex {
 	private TreeSet<Integer> documents = new TreeSet<Integer>(); // all document ids
 	private HashMap<String,ArrayList<DocumentIndexNode>> index
@@ -21,12 +25,11 @@ public class InvertedIndex {
 		documents.clear();
 	}
 	
-
-	public TreeSet<Integer> getDocuments () {
-		return documents;
-	}
-	
-	// return the list of documents containing the term
+	/**
+	 * Return the list of documents containing the term
+	 * @param term
+	 * @return
+	 */
 	public ArrayList<DocumentIndexNode> getDocumentList (String term) {
 		if (index.containsKey(term)) {
 			return index.get(term);
@@ -35,13 +38,23 @@ public class InvertedIndex {
 		}
 	}
 
-	// return the document node of the specified document containing the term
+	/**
+	 * Return the document node of the specified document containing the term
+	 * @param term
+	 * @param doc
+	 * @return
+	 */
 	public DocumentIndexNode getDocumentIndexNode(String term, int doc) {
 		ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
 		return getDocumentIndexNode(doclist, doc);
 	}
 
-	// return the document node of the specified document from a list of documents
+	/**
+	 * Return the document node of the specified document from a list of documents
+	 * @param doclist
+	 * @param doc
+	 * @return
+	 */
 	public DocumentIndexNode getDocumentIndexNode(ArrayList<DocumentIndexNode> doclist, int doc) {
 		if (doclist != null) {
 			for (DocumentIndexNode d: doclist) {
@@ -52,11 +65,21 @@ public class InvertedIndex {
 		}
 		return null;
 	}
+	
+	public TreeSet<Integer> getDocuments () {
+		return documents;
+	}
 
 	public Set<String> getTerms() {
 		return index.keySet();
 	}
-	// add a new position of a term to the document 
+	
+	/**
+	 * Add a new position of a term to the document 
+	 * @param term
+	 * @param doc
+	 * @param pos
+	 */
 	public void addTerm(String term, int doc, int pos) {
 		ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
 		DocumentIndexNode d;
@@ -77,6 +100,11 @@ public class InvertedIndex {
 		idfCacheClean = false;  // mark cache dirty, and idf will be re-calculated
 	}
 
+	/**
+	 * Calculate document frequency of a term
+	 * @param term
+	 * @return
+	 */
 	public int df (String term) {
 		ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
 		if (doclist == null) { // new term
@@ -86,7 +114,11 @@ public class InvertedIndex {
 		}
 	}
 
-	// calculate the inverted document frequency of a term
+	/**
+	 * Calculate the inverted document frequency of a term
+	 * @param term
+	 * @return
+	 */
 	public double idf (String term) {
 
 		// Use cached value when possible
@@ -108,12 +140,20 @@ public class InvertedIndex {
 		// this should not happen because idf is calculated for terms that are present 
 		if (df == 0) df = 1;
 		double idf = Math.log10(N/df);
+		
 		if (term.equals("bill") || term.equals("information")) //@@@ DEBUG		
 			System.out.println("N="+N+", df="+df+", idf("+term+") = "+idf);
+		
 		idfCache.put(term, idf); // update cache
 		return idf;
 	}
 
+	/**
+	 * Return tf-idf of a term in the document
+	 * @param term
+	 * @param doc
+	 * @return
+	 */
 	public double tfidf (String term, int doc) {
 		DocumentIndexNode d = getDocumentIndexNode(term,doc);
 		return tfidf(term, d);
@@ -128,6 +168,10 @@ public class InvertedIndex {
 		return tfidf;
 	}
 	
+	/**
+	 * Add document and its terms to the index
+	 * @param rn
+	 */
 	public void addDocument (ResultNode rn) {
 		int docid = rn.getDocId();
 		ArrayList<String> terms = rn.getTerms();
@@ -142,7 +186,6 @@ public class InvertedIndex {
 		for (String term: index.keySet()) {
 			sb.append(term+":");
 			ArrayList<DocumentIndexNode> doclist = getDocumentList(term);
-			//int count = 0;
 			for (DocumentIndexNode d: doclist) {
 				sb.append(" " + d);
 			}

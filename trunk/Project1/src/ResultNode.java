@@ -16,18 +16,6 @@ public class ResultNode {
 	private String summary;
 	private boolean relevant = false; // Tracks if the result is relevant
 	private ArrayList<String> terms = new ArrayList<String>();
-	
-	/**
-	 * Constructor for result node
-	 * @param summary Result abstract
-	 * @param title Result title
-	 * @param url Result URL
-	 */
-//	public ResultNode (String summary, String title, String url) {
-//		this.title = trim(title);
-//		this.url = trim(url);
-//		this.summary = trim(summary);
-//	}
 
 	/**
 	 * Constructor for result node
@@ -42,10 +30,6 @@ public class ResultNode {
 		this.url = trim(url);
 		this.summary = trim(summary);
 		setTerms(); // create the keywords list
-	}
-
-	public int getDocId () {
-		return docid;
 	}
 	
 	/**
@@ -83,9 +67,14 @@ public class ResultNode {
 		return title;
 	}
 	
+	public int getDocId () {
+		return docid;
+	}
+	
 	public ArrayList<String> getTerms() {
 		return terms;
 	}
+	
 	/**
 	 * Returns result's web page
 	 * @return
@@ -102,7 +91,7 @@ public class ResultNode {
 	public static String trim(String str) {
 		String newStr = null;
 
-		newStr = str.replaceAll("\\<.*?b\\>", "");
+		newStr = str.replaceAll("\\<.*?\\>", "");
 		newStr = newStr.replaceAll("\\\\/", "/");
 		newStr = newStr.replaceAll("\\\\\"", "\"");
 
@@ -111,10 +100,12 @@ public class ResultNode {
 	
 	/**
 	 * Tokenize the title and summary
-	 * store the terms in keywords
+	 * Store the terms in keywords
 	 */
 	public void setTerms () {
-		String text = title + " " + summary;
+		String text = "";
+		try { text = trim(getWebPage()); }
+		catch (IOException e) { text = title + " " + summary; }
 		String[] words = text.split(" ");
 		for (int pos = 0; pos < words.length; pos++) {
 			String word = words[pos];

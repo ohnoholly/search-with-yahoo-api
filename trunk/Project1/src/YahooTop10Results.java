@@ -68,7 +68,7 @@ public class YahooTop10Results {
 	}
 	
 	/**
-	 * 
+	 * Returns result nodes marked relevant by user
 	 * @return relevant result nodes
 	 */
 	public ArrayList<ResultNode> getRelevantResultNodes() {

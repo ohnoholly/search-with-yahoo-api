@@ -5,7 +5,6 @@
  *	Primary class
  ****/
 
-
 public class SmartSearch {
 
 	/**
@@ -40,7 +39,6 @@ public class SmartSearch {
 		QueryExpansion qex = new QueryExpansion(searchStr);
 		
 		try {
-			int count = 0; //@@@ test
 			for (String query = searchStr; ; query = qex.expand()) {
 				
 				// Return parameters to user
@@ -60,10 +58,19 @@ public class SmartSearch {
 				System.out.println("Query " + query);
 				System.out.println("Precision " + precision);
 
-				// Revise query or not
+				// Check the precision result
 				if (precision < precisionGoal) {
-					System.out.println("Still below the desired precision of " + precisionGoal);
-					qex.updateResult(results); // Look at current results and expand
+					// No relevant results
+					if (precision <= 0) {
+						System.out.println("Below desired precision, but can no longer augment the query");
+						break;
+					}
+					// Below desired precision, expand query
+					else {
+						System.out.println("Still below the desired precision of " + precisionGoal);
+						qex.updateResult(results); 
+					}
+				// Desired precision reached
 				} else {
 					System.out.println("Desired precision reached, done");
 					break;

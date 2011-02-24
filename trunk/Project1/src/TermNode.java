@@ -14,8 +14,6 @@ public class TermNode implements Comparable<TermNode> {
 	private int termFrequency;		 // Frequency of term in a document or set of documents
 	private double score;			 // Score, calculated by weight and factor
 	
-
-	
 	/**
 	 * Constructor
 	 * @param name the term
@@ -81,18 +79,6 @@ public class TermNode implements Comparable<TermNode> {
 	}
 	public void setNormalizedWeight(double w) {
 		this.normalizedWeight = w;
-	}
-	
-	/**
-	 * Calculates weight
-	 * @param df the number of documents
-	 */
-	public double calculateWeight(float df) {
-		
-		weight = termFrequency; // @@@ test
-		// weight = tf * idf
-		
-		return weight;
 	}
 
 	/**
